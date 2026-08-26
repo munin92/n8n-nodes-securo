@@ -1,0 +1,63 @@
+{
+  "name": "@munin92/n8n-nodes-securo",
+  "version": "0.1.0",
+  "description": "n8n community node for Securo, generated from its OpenAPI description so every route is covered.",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "securo",
+    "finance",
+    "budget"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/munin92/n8n-nodes-securo",
+  "author": {
+    "name": "munin92",
+    "email": "lippitz.marian@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/munin92/n8n-nodes-securo.git"
+  },
+  "main": "index.js",
+  "engines": {
+    "node": ">=20.15"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "generate": "node scripts/generate.mjs",
+    "build": "rm -rf dist && tsc && node scripts/copy-icons.mjs",
+    "lint": "eslint .",
+    "test": "node --test --experimental-strip-types test/*.test.ts",
+    "release": "semantic-release"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/SecuroApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Securo/Securo.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@n8n/eslint-plugin-community-nodes": "^0.30.0",
+    "@semantic-release/changelog": "^7.0.0",
+    "@semantic-release/git": "^11.0.1",
+    "@types/node": "^22.10.0",
+    "eslint": "9.29.0",
+    "n8n-workflow": "*",
+    "semantic-release": "^25.0.9",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.68.0"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}

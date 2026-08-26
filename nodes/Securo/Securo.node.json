@@ -1,0 +1,10 @@
+{
+  "node": "@munin92/n8n-nodes-securo.securo",
+  "nodeVersion": "1.0",
+  "codexVersion": "1.0",
+  "categories": ["Finance & Accounting"],
+  "resources": {
+    "primaryDocumentation": [{ "url": "https://github.com/munin92/n8n-nodes-securo" }],
+    "credentialDocumentation": [{ "url": "https://github.com/munin92/n8n-nodes-securo" }]
+  }
+}
