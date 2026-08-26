@@ -76,6 +76,10 @@ Also loaded against `n8n-workflow@1.82.0` — an older peer copy in a shared
 `~/.n8n/nodes` is what makes a node fail with the misleading
 *"Class could not be found"*.
 
+Version 0.1.0 was published by hand to create the package, so it carries no
+attestation; a trusted publisher can only be configured on a package that
+already exists. Every release from CI has one.
+
 **Not yet run against a live Securo instance.** The stub answers like Securo but
 is not Securo.
 
