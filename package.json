@@ -1,6 +1,6 @@
 {
   "name": "@munin92/n8n-nodes-securo",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "n8n community node for Securo, generated from its OpenAPI description so every route is covered.",
   "keywords": [
     "n8n-community-node-package",
