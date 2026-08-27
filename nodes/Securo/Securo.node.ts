@@ -14,7 +14,7 @@ import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 
 import { errorDetail, securoDetail } from './errorDetail';
 import { OPERATIONS } from './operations.generated';
-import { buildProperties, fillPath } from './properties';
+import { buildProperties, buildRequest, fillPath } from './properties';
 import { ensureToken, type SecuroTokenStore } from './tokenStore';
 
 export class Securo implements INodeType {
@@ -27,7 +27,7 @@ export class Securo implements INodeType {
 		// dann einen TypeError, den n8n als "Class could not be found" meldet.
 		icon: { light: 'file:securo.light.svg', dark: 'file:securo.dark.svg' },
 		group: ['input'],
-		version: 1,
+		version: [1, 2],
 		usableAsTool: true,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Work with Securo. Every route from its OpenAPI description.',
@@ -114,21 +114,37 @@ export class Securo implements INodeType {
 					pfadWerte[p] = String(this.getNodeParameter(`path_${p}`, i, '') ?? '').trim();
 				}
 
-				const qs = this.getNodeParameter('queryParameters', i, {}) as IDataObject;
+				let qs: IDataObject;
 				let body: IDataObject | undefined;
-				if (op.hasBody) {
-					const roh = this.getNodeParameter('body', i, '{}');
-					if (typeof roh !== 'string') {
-						body = (roh ?? {}) as IDataObject;
-					} else {
-						try {
-							body = JSON.parse(roh || '{}') as IDataObject;
-						} catch (e) {
-							throw new NodeOperationError(
-								this.getNode(),
-								`Body is not valid JSON: ${(e as Error).message}`,
-								{ itemIndex: i },
-							);
+
+				if (this.getNode().typeVersion >= 2) {
+					// Version 2 liest echte Felder und sortiert sie selbst nach
+					// Query und Body - die Tabelle weiss, wohin welches gehoert.
+					try {
+						const gebaut = buildRequest(op, (name, fallback) =>
+							this.getNodeParameter(name, i, fallback),
+						);
+						qs = gebaut.qs as IDataObject;
+						body = gebaut.body as IDataObject | undefined;
+					} catch (e) {
+						throw new NodeOperationError(this.getNode(), (e as Error).message, { itemIndex: i });
+					}
+				} else {
+					qs = this.getNodeParameter('queryParameters', i, {}) as IDataObject;
+					if (op.body) {
+						const roh = this.getNodeParameter('body', i, '{}');
+						if (typeof roh !== 'string') {
+							body = (roh ?? {}) as IDataObject;
+						} else {
+							try {
+								body = JSON.parse(roh || '{}') as IDataObject;
+							} catch (e) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`Body is not valid JSON: ${(e as Error).message}`,
+									{ itemIndex: i },
+								);
+							}
 						}
 					}
 				}
