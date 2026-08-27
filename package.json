@@ -32,7 +32,9 @@
     "build": "rm -rf dist && tsc && node scripts/copy-icons.mjs",
     "lint": "eslint .",
     "test": "node --test --experimental-strip-types test/*.test.ts",
-    "release": "semantic-release"
+    "release": "semantic-release",
+    "test:built": "node --test test/built/*.test.mjs",
+    "prepublishOnly": "npm run build && npm run lint && npm test && npm run test:built"
   },
   "files": [
     "dist"

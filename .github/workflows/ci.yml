@@ -19,3 +19,8 @@ jobs:
       - run: npx tsc --noEmit
       - run: npm test
       - run: npm run build
+      # Laedt die gebaute Klasse mit require, so wie n8ns Community-Lader.
+      # Ein Fehler dabei erscheint in n8n als "Class could not be found".
+      - run: npm run test:built
+      # Die erzeugte Tabelle muss zum OpenAPI-Schnappschuss passen.
+      - run: npm run generate && git diff --exit-code nodes/Securo/operations.generated.ts
