@@ -65,6 +65,22 @@ run. The plugin's rules walk `ObjectExpression` from typescript-estree, not
 purpose; there is no token model in the source, and Keycloak is a login path
 rather than a token source (`oidc_auth.py:389`).
 
+## The very first publish of a new package
+
+`publishConfig.provenance` is set, and provenance can only be produced by a
+supported CI. A publish from a laptop therefore fails before it starts:
+
+```console
+$ npm publish --access public
+npm error code EUSAGE
+npm error Automatic provenance generation not supported for provider: null
+```
+
+Pass `--no-provenance` for that one manual publish. It is needed exactly once,
+because a trusted publisher can only be configured on a package that already
+exists — so version 0.1.0 carries no attestation and will not pass
+`@n8n/scan-community-package`. Every release from CI does.
+
 ## Commits and releases
 
 Conventional Commits — semantic-release reads them and every push to `main`

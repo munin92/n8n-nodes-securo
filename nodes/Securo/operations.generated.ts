@@ -6,6 +6,16 @@
  * Neu erzeugen mit: npm run generate -- --url https://<host>/api/openapi.json
  */
 
+export interface SecuroField {
+	name: string;
+	required: boolean;
+	description?: string;
+	kind: 'string' | 'number' | 'boolean' | 'options' | 'csv' | 'json';
+	options?: string[];
+	minimum?: number;
+	maximum?: number;
+}
+
 export interface SecuroOperation {
 	resource: string;
 	resourceName: string;
@@ -15,8 +25,8 @@ export interface SecuroOperation {
 	method: string;
 	path: string;
 	pathParams: string[];
-	queryParams: { name: string; required: boolean; description: string }[];
-	hasBody: boolean;
+	query: SecuroField[];
+	body: { raw: boolean; fields: SecuroField[] } | null;
 	bodyRequired: boolean;
 }
 
@@ -32,8 +42,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"account_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -45,8 +55,67 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/accounts",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "type",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "balance",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "balance_date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "currency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "credit_limit",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "statement_close_day",
+					"required": false,
+					"kind": "number"
+				},
+				{
+					"name": "payment_due_day",
+					"required": false,
+					"kind": "number"
+				},
+				{
+					"name": "minimum_payment",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "card_brand",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "card_level",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -60,8 +129,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"account_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -75,8 +144,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"account_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -90,19 +159,21 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"account_id"
 		],
-		"queryParams": [
+		"query": [
 			{
 				"name": "from",
 				"required": false,
-				"description": "YYYY-MM-DD"
+				"description": "YYYY-MM-DD",
+				"kind": "string"
 			},
 			{
 				"name": "to",
 				"required": false,
-				"description": "YYYY-MM-DD"
+				"description": "YYYY-MM-DD",
+				"kind": "string"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -116,14 +187,17 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"account_id"
 		],
-		"queryParams": [
+		"query": [
 			{
 				"name": "limit",
 				"required": false,
-				"description": "Max bills to return, newest due_date first"
+				"description": "Max bills to return, newest due_date first",
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 200
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -137,29 +211,33 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"account_id"
 		],
-		"queryParams": [
+		"query": [
 			{
 				"name": "from",
 				"required": false,
-				"description": "YYYY-MM-DD"
+				"description": "YYYY-MM-DD",
+				"kind": "string"
 			},
 			{
 				"name": "to",
 				"required": false,
-				"description": "YYYY-MM-DD"
+				"description": "YYYY-MM-DD",
+				"kind": "string"
 			},
 			{
 				"name": "bill_id",
 				"required": false,
-				"description": "Aggregate by bill_id (issue #92); takes precedence over from/to"
+				"description": "Aggregate by bill_id (issue #92); takes precedence over from/to",
+				"kind": "string"
 			},
 			{
 				"name": "unbilled_only",
 				"required": false,
-				"description": "Cycle-math fallback only: exclude txs already linked to any bill"
+				"description": "Cycle-math fallback only: exclude txs already linked to any bill",
+				"kind": "boolean"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -171,14 +249,14 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/accounts",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "include_closed",
 				"required": false,
-				"description": ""
+				"kind": "boolean"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -192,8 +270,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"account_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -207,8 +285,67 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"account_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "display_name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "type",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "balance",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "balance_date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "credit_limit",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "statement_close_day",
+					"required": false,
+					"kind": "number"
+				},
+				{
+					"name": "payment_due_day",
+					"required": false,
+					"kind": "number"
+				},
+				{
+					"name": "minimum_payment",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "card_brand",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "card_level",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -220,8 +357,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/admin/accounting-mode",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -233,8 +370,32 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/admin/users",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "email",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "password",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "is_superuser",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "preferences",
+					"required": false,
+					"kind": "json"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -246,8 +407,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/admin/date-format",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -259,8 +420,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/admin/default-colors",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -274,8 +435,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"user_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -289,8 +450,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"key"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -304,8 +465,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"user_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -317,24 +478,27 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/admin/users",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "search",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "page",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1
 			},
 			{
 				"name": "limit",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 100
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -346,8 +510,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/admin/number-format",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -359,8 +523,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/admin/registration-status",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -374,8 +538,17 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"key"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "value",
+					"required": true,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -389,8 +562,37 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"user_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "email",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "password",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "is_active",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "is_superuser",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "preferences",
+					"required": false,
+					"kind": "json"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -404,8 +606,32 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"agent_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "content",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "conversation_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "channel",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "page_context",
+					"required": false,
+					"kind": "json"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -417,8 +643,96 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/agents",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "description",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "system_prompt",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "icon",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "color",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "connection_id",
+					"required": false,
+					"description": "LlmConnection to use; falls back to instance default when null",
+					"kind": "string"
+				},
+				{
+					"name": "provider",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "model",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "temperature",
+					"required": false,
+					"kind": "number",
+					"minimum": 0,
+					"maximum": 2
+				},
+				{
+					"name": "max_history_messages",
+					"required": false,
+					"kind": "number",
+					"minimum": 1,
+					"maximum": 200
+				},
+				{
+					"name": "top_n",
+					"required": false,
+					"kind": "number",
+					"minimum": 0,
+					"maximum": 50
+				},
+				{
+					"name": "similarity_threshold",
+					"required": false,
+					"kind": "number",
+					"minimum": 0,
+					"maximum": 1
+				},
+				{
+					"name": "extra",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "auto_context",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "is_default",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -430,8 +744,48 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/agents/connections",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "kind",
+					"required": true,
+					"description": "ollama|openai|anthropic|openai_compatible",
+					"kind": "string"
+				},
+				{
+					"name": "base_url",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "api_key",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "default_model",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "extra",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "is_default",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -443,8 +797,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/agents/mcp-tokens",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -458,8 +812,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"agent_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -473,8 +827,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"conn_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -488,8 +842,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"conversation_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -504,8 +858,8 @@ export const OPERATIONS: SecuroOperation[] = [
 			"agent_id",
 			"doc_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -519,8 +873,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"conversation_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -534,8 +888,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"agent_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -549,8 +903,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"agent_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -562,8 +916,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/agents/info",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -577,8 +931,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"conn_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -592,8 +946,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"conversation_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -605,8 +959,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/agents/default",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -618,14 +972,14 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/agents",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "include_archived",
 				"required": false,
-				"description": ""
+				"kind": "boolean"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -637,8 +991,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/agents/connections",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -650,19 +1004,21 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/agents/conversations",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "agent_id",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "limit",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 200
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -676,8 +1032,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"agent_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -691,14 +1047,16 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"conversation_id"
 		],
-		"queryParams": [
+		"query": [
 			{
 				"name": "limit",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 500
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -712,8 +1070,11 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"agent_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": true,
+			"fields": []
+		},
 		"bodyRequired": true
 	},
 	{
@@ -727,8 +1088,17 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"conversation_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "title",
+					"required": true,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -742,8 +1112,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"conn_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -758,14 +1128,14 @@ export const OPERATIONS: SecuroOperation[] = [
 			"agent_id",
 			"doc_id"
 		],
-		"queryParams": [
+		"query": [
 			{
 				"name": "pinned",
 				"required": true,
-				"description": ""
+				"kind": "boolean"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -779,8 +1149,100 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"agent_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "description",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "system_prompt",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "icon",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "color",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "connection_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "provider",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "model",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "temperature",
+					"required": false,
+					"kind": "number",
+					"minimum": 0,
+					"maximum": 2
+				},
+				{
+					"name": "max_history_messages",
+					"required": false,
+					"kind": "number",
+					"minimum": 1,
+					"maximum": 200
+				},
+				{
+					"name": "top_n",
+					"required": false,
+					"kind": "number",
+					"minimum": 0,
+					"maximum": 50
+				},
+				{
+					"name": "similarity_threshold",
+					"required": false,
+					"kind": "number",
+					"minimum": 0,
+					"maximum": 1
+				},
+				{
+					"name": "extra",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "auto_context",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "is_archived",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "is_default",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -794,8 +1256,42 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"conn_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "base_url",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "api_key",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "default_model",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "extra",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "is_default",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -809,8 +1305,11 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"agent_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": true,
+			"fields": []
+		},
 		"bodyRequired": true
 	},
 	{
@@ -822,8 +1321,32 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/asset-groups",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "icon",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "color",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "position",
+					"required": false,
+					"kind": "number"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -837,8 +1360,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"group_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -850,8 +1373,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/asset-groups",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -865,8 +1388,32 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"group_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "icon",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "color",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "position",
+					"required": false,
+					"kind": "number"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -880,8 +1427,42 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"asset_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "kind",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "quantity",
+					"required": true,
+					"kind": "json"
+				},
+				{
+					"name": "price",
+					"required": true,
+					"kind": "json"
+				},
+				{
+					"name": "fee",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "date",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "notes",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -895,8 +1476,22 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"asset_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "amount",
+					"required": true,
+					"kind": "json"
+				},
+				{
+					"name": "date",
+					"required": true,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -908,8 +1503,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/assets/import/template",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -921,8 +1516,52 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/assets/buy",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "ticker",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "quantity",
+					"required": true,
+					"kind": "json"
+				},
+				{
+					"name": "price",
+					"required": true,
+					"kind": "json"
+				},
+				{
+					"name": "fee",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "date",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "group_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "notes",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -934,8 +1573,117 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/assets",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "type",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "currency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "units",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "valuation_method",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "purchase_date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "purchase_price",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "sell_date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "sell_price",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "current_value",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "growth_type",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "growth_rate",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "growth_frequency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "growth_start_date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "is_archived",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "position",
+					"required": false,
+					"kind": "number"
+				},
+				{
+					"name": "group_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "ticker",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "ticker_exchange",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "maturity_date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "unit_price",
+					"required": false,
+					"kind": "json"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -949,8 +1697,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"asset_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -964,8 +1712,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"tx_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -979,8 +1727,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"value_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -994,8 +1742,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"asset_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1009,14 +1757,16 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"asset_id"
 		],
-		"queryParams": [
+		"query": [
 			{
 				"name": "months",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 120
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1028,8 +1778,27 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/assets/import",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "orders",
+					"required": true,
+					"kind": "json"
+				},
+				{
+					"name": "group_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "filename",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1043,8 +1812,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"asset_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1058,8 +1827,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"asset_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1071,14 +1840,14 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/assets",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "include_archived",
 				"required": false,
-				"description": ""
+				"kind": "boolean"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1090,24 +1859,26 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/assets/transactions",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "ticker",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "kind",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "limit",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 2000
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1119,14 +1890,14 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/assets/market/quote",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "symbol",
 				"required": true,
-				"description": ""
+				"kind": "string"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1138,19 +1909,22 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/assets/market/search",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "q",
 				"required": true,
-				"description": "Ticker or company name"
+				"description": "Ticker or company name",
+				"kind": "string"
 			},
 			{
 				"name": "limit",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 300
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1162,8 +1936,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/assets/portfolio-trend",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1175,8 +1949,11 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/assets/import/preview",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": true,
+			"fields": []
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1190,8 +1967,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"asset_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1205,14 +1982,108 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"asset_id"
 		],
-		"queryParams": [
+		"query": [
 			{
 				"name": "regenerate_growth",
 				"required": false,
-				"description": ""
+				"kind": "boolean"
 			}
 		],
-		"hasBody": true,
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "type",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "currency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "units",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "valuation_method",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "purchase_date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "purchase_price",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "sell_date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "sell_price",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "growth_type",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "growth_rate",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "growth_frequency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "growth_start_date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "is_archived",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "position",
+					"required": false,
+					"kind": "number"
+				},
+				{
+					"name": "group_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "ticker",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "ticker_exchange",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1226,8 +2097,42 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"tx_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "kind",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "quantity",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "price",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "fee",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "notes",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1242,8 +2147,8 @@ export const OPERATIONS: SecuroOperation[] = [
 			"transaction_id",
 			"attachment_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1258,8 +2163,8 @@ export const OPERATIONS: SecuroOperation[] = [
 			"transaction_id",
 			"attachment_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1273,8 +2178,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"transaction_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1289,8 +2194,17 @@ export const OPERATIONS: SecuroOperation[] = [
 			"transaction_id",
 			"attachment_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "filename",
+					"required": true,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1304,8 +2218,11 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"transaction_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": true,
+			"fields": []
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1319,8 +2236,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"passkey_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1332,8 +2249,22 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/auth/2fa/disable",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "password",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "code",
+					"required": true,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1345,8 +2276,17 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/auth/2fa/enable",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "code",
+					"required": true,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1358,8 +2298,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/auth/passkeys",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1371,8 +2311,11 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/auth/login",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": true,
+			"fields": []
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1384,8 +2327,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/auth/logout",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1397,19 +2340,19 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/auth/oidc/callback",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "code",
 				"required": true,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "state",
 				"required": true,
-				"description": ""
+				"kind": "string"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1421,8 +2364,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/auth/oidc/config",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1434,8 +2377,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/auth/oidc/login",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1447,8 +2390,17 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/auth/passkeys/authenticate/options",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "email",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1460,8 +2412,17 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/auth/passkeys/register/options",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1473,8 +2434,17 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/auth/passkeys/2fa/options",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "temp_token",
+					"required": true,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1486,8 +2456,42 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/auth/register",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "email",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "password",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "is_active",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "is_superuser",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "is_verified",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "preferences",
+					"required": false,
+					"kind": "json"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1499,8 +2503,17 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/auth/forgot-password",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "email",
+					"required": true,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1512,8 +2525,22 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/auth/reset-password",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "token",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "password",
+					"required": true,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1525,8 +2552,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/auth/2fa/setup",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1538,8 +2565,22 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/auth/2fa/verify",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "temp_token",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "code",
+					"required": true,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1551,8 +2592,22 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/auth/passkeys/authenticate/verify",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "challenge_id",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "credential",
+					"required": true,
+					"kind": "json"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1564,8 +2619,27 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/auth/passkeys/register/verify",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "challenge_id",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "credential",
+					"required": true,
+					"kind": "json"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1577,8 +2651,27 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/auth/passkeys/2fa/verify",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "temp_token",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "challenge_id",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "credential",
+					"required": true,
+					"kind": "json"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1590,14 +2683,14 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/budgets/comparison",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "month",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1609,8 +2702,32 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/budgets",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "category_id",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "amount",
+					"required": true,
+					"kind": "json"
+				},
+				{
+					"name": "month",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "is_recurring",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1624,8 +2741,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"budget_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1637,14 +2754,14 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/budgets",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "month",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1658,8 +2775,22 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"budget_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "amount",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "effective_month",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1671,8 +2802,42 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/categories",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "icon",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "color",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "group_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "treat_as_transfer",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "is_ignored",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1686,8 +2851,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"category_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1699,8 +2864,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/categories",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1714,8 +2879,42 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"category_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "icon",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "color",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "group_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "treat_as_transfer",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "is_ignored",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1727,8 +2926,32 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/category-groups",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "icon",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "color",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "position",
+					"required": false,
+					"kind": "number"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1742,8 +2965,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"group_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1755,8 +2978,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/category-groups",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1770,8 +2993,32 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"group_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "icon",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "color",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "position",
+					"required": false,
+					"kind": "number"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1783,8 +3030,42 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/collections",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "icon",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "color",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "position",
+					"required": false,
+					"kind": "number"
+				},
+				{
+					"name": "account_ids",
+					"required": false,
+					"kind": "csv"
+				},
+				{
+					"name": "wallet_ids",
+					"required": false,
+					"kind": "csv"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1798,8 +3079,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"collection_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1811,8 +3092,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/collections",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1826,8 +3107,42 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"collection_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "icon",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "color",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "position",
+					"required": false,
+					"kind": "number"
+				},
+				{
+					"name": "account_ids",
+					"required": false,
+					"kind": "csv"
+				},
+				{
+					"name": "wallet_ids",
+					"required": false,
+					"kind": "csv"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1839,8 +3154,17 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/connections/connect-token",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "provider",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1854,8 +3178,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"connection_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1867,8 +3191,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/connections/transfers/detect",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1880,8 +3204,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/connections/providers",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1893,8 +3217,22 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/connections/oauth/url",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "provider",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "flow_params",
+					"required": false,
+					"kind": "json"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1908,8 +3246,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"connection_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1923,8 +3261,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"connection_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1936,8 +3274,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/connections",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1951,14 +3289,14 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"provider"
 		],
-		"queryParams": [
+		"query": [
 			{
 				"name": "country",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -1970,8 +3308,37 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/connections/oauth/callback",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "code",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "state",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "provider",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "sync_assets",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "reconnect_connection_id",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -1985,8 +3352,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"connection_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2000,8 +3367,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"pair_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2015,8 +3382,39 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"connection_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "display_name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "payee_source",
+					"required": false,
+					"kind": "options",
+					"options": [
+						"auto",
+						"merchant",
+						"payment_data",
+						"description",
+						"none"
+					]
+				},
+				{
+					"name": "import_pending",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "sync_assets",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2028,8 +3426,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/currencies",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2041,19 +3439,19 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/dashboard/balance-history",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "month",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "account_ids",
 				"required": false,
-				"description": ""
+				"kind": "csv"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2065,19 +3463,21 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/dashboard/monthly-trend",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "months",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 12
 			},
 			{
 				"name": "account_ids",
 				"required": false,
-				"description": ""
+				"kind": "csv"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2089,29 +3489,29 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/dashboard/projected-transactions",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "month",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "account_id",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "from",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "to",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2123,19 +3523,19 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/dashboard/spending-by-category",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "month",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "account_ids",
 				"required": false,
-				"description": ""
+				"kind": "csv"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2147,29 +3547,29 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/dashboard/summary",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "month",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "balance_date",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "account_ids",
 				"required": false,
-				"description": ""
+				"kind": "csv"
 			},
 			{
 				"name": "asset_group_ids",
 				"required": false,
-				"description": ""
+				"kind": "csv"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2181,8 +3581,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/export/backup",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2194,8 +3594,17 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/export/backup",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "password",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2207,8 +3616,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/fiscal/jurisdictions",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2220,8 +3629,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/fiscal/tax-id-kinds",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2233,8 +3642,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/fx-rates/status",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2246,8 +3655,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/fx-rates/refresh",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2259,8 +3668,72 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/goals",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "target_amount",
+					"required": true,
+					"kind": "json"
+				},
+				{
+					"name": "current_amount",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "currency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "target_date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "tracking_type",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "account_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "asset_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "asset_group_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "icon",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "color",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "metadata_json",
+					"required": false,
+					"kind": "json"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2274,8 +3747,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"goal_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2289,8 +3762,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"goal_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2302,14 +3775,16 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/goals/summary",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "limit",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 10
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2321,14 +3796,14 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/goals",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "status",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2342,8 +3817,82 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"goal_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "target_amount",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "current_amount",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "currency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "target_date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "tracking_type",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "account_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "asset_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "asset_group_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "status",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "icon",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "color",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "position",
+					"required": false,
+					"kind": "number"
+				},
+				{
+					"name": "metadata_json",
+					"required": false,
+					"kind": "json"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2355,8 +3904,49 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/groups",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "kind",
+					"required": false,
+					"kind": "options",
+					"options": [
+						"social",
+						"cost_center",
+						"project",
+						"client",
+						"other"
+					]
+				},
+				{
+					"name": "default_currency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "icon",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "color",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "notes",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2370,8 +3960,32 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"group_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "linked_user_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "email",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "is_self",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2385,8 +3999,57 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"group_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "from_member_id",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "to_member_id",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "amount",
+					"required": true,
+					"kind": "json"
+				},
+				{
+					"name": "currency",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "date",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "transaction_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "notes",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "account_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "description",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2400,8 +4063,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"group_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2416,8 +4079,8 @@ export const OPERATIONS: SecuroOperation[] = [
 			"group_id",
 			"member_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2432,8 +4095,8 @@ export const OPERATIONS: SecuroOperation[] = [
 			"group_id",
 			"settlement_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2447,8 +4110,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"group_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2462,8 +4125,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"group_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2477,14 +4140,14 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"group_id"
 		],
-		"queryParams": [
+		"query": [
 			{
 				"name": "limit",
 				"required": false,
-				"description": ""
+				"kind": "number"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2496,14 +4159,14 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/groups",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "include_archived",
 				"required": false,
-				"description": ""
+				"kind": "boolean"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2517,8 +4180,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"group_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2532,8 +4195,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"group_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2547,8 +4210,54 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"group_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "kind",
+					"required": false,
+					"kind": "options",
+					"options": [
+						"social",
+						"cost_center",
+						"project",
+						"client",
+						"other"
+					]
+				},
+				{
+					"name": "default_currency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "icon",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "color",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "notes",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "is_archived",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2563,8 +4272,32 @@ export const OPERATIONS: SecuroOperation[] = [
 			"group_id",
 			"member_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "linked_user_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "email",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "is_self",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2579,8 +4312,47 @@ export const OPERATIONS: SecuroOperation[] = [
 			"group_id",
 			"settlement_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "from_member_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "to_member_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "amount",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "currency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "transaction_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "notes",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2592,8 +4364,37 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/transactions/import",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "account_id",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "transactions",
+					"required": true,
+					"kind": "json"
+				},
+				{
+					"name": "filename",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "detected_format",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "detect_duplicates",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2605,8 +4406,11 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/transactions/import/preview",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": true,
+			"fields": []
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2620,8 +4424,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"import_log_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2633,8 +4437,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/import-logs",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2646,8 +4450,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/info",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2659,8 +4463,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/health",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2672,8 +4476,17 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/payees/bulk-delete",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "ids",
+					"required": true,
+					"kind": "csv"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2685,8 +4498,56 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/payees",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "type",
+					"required": false,
+					"kind": "options",
+					"options": [
+						"person",
+						"company"
+					]
+				},
+				{
+					"name": "notes",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "email",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "phone",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "address",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "website",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "tax_ids",
+					"required": false,
+					"kind": "json"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2700,8 +4561,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"payee_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2715,8 +4576,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"payee_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2730,19 +4591,19 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"payee_id"
 		],
-		"queryParams": [
+		"query": [
 			{
 				"name": "from",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "to",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2754,24 +4615,24 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/payees",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "q",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "type",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "is_favorite",
 				"required": false,
-				"description": ""
+				"kind": "boolean"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2783,8 +4644,22 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/payees/merge",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "source_ids",
+					"required": true,
+					"kind": "csv"
+				},
+				{
+					"name": "target_id",
+					"required": true,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2798,8 +4673,61 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"payee_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "type",
+					"required": false,
+					"kind": "options",
+					"options": [
+						"person",
+						"company"
+					]
+				},
+				{
+					"name": "is_favorite",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "notes",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "email",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "phone",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "address",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "website",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "tax_ids",
+					"required": false,
+					"kind": "json"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2811,8 +4739,82 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/recurring-transactions",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "description",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "amount",
+					"required": true,
+					"kind": "json"
+				},
+				{
+					"name": "currency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "type",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "frequency",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "weekend_adjustment",
+					"required": false,
+					"kind": "options",
+					"options": [
+						"none",
+						"previous_friday",
+						"next_monday"
+					]
+				},
+				{
+					"name": "day_of_month",
+					"required": false,
+					"kind": "number"
+				},
+				{
+					"name": "start_date",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "end_date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "account_id",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "category_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "skip_first",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "auto_generate",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2826,8 +4828,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"recurring_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2839,8 +4841,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/recurring-transactions/generate",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2852,8 +4854,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/recurring-transactions",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2867,8 +4869,82 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"recurring_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "description",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "amount",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "currency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "type",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "frequency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "weekend_adjustment",
+					"required": false,
+					"kind": "options",
+					"options": [
+						"none",
+						"previous_friday",
+						"next_monday"
+					]
+				},
+				{
+					"name": "day_of_month",
+					"required": false,
+					"kind": "number"
+				},
+				{
+					"name": "start_date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "end_date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "account_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "category_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "is_active",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "auto_generate",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -2880,29 +4956,31 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/reports/cash-flow",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "months",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 12
 			},
 			{
 				"name": "interval",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "baseline",
 				"required": false,
-				"description": ""
+				"kind": "boolean"
 			},
 			{
 				"name": "account_ids",
 				"required": false,
-				"description": ""
+				"kind": "csv"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2914,34 +4992,38 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/reports/income-expenses",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "months",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 24
 			},
 			{
 				"name": "interval",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "account_ids",
 				"required": false,
-				"description": ""
+				"kind": "csv"
 			},
 			{
 				"name": "period",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "days",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 730
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2953,34 +5035,36 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/reports/net-worth",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "months",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 24
 			},
 			{
 				"name": "interval",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "account_ids",
 				"required": false,
-				"description": ""
+				"kind": "csv"
 			},
 			{
 				"name": "asset_group_ids",
 				"required": false,
-				"description": ""
+				"kind": "csv"
 			},
 			{
 				"name": "period",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -2992,8 +5076,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/rules/apply-all",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3005,8 +5089,52 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/rules",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "conditions_op",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "conditions",
+					"required": true,
+					"kind": "csv"
+				},
+				{
+					"name": "actions",
+					"required": true,
+					"kind": "json"
+				},
+				{
+					"name": "priority",
+					"required": false,
+					"kind": "number"
+				},
+				{
+					"name": "is_active",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "apply_to_existing",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "overwrite_existing_categories",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3020,8 +5148,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"rule_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3033,8 +5161,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/rules/export",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3046,8 +5174,22 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/rules/import",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "payload",
+					"required": true,
+					"kind": "json"
+				},
+				{
+					"name": "overwrite",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3061,14 +5203,14 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"pack_code"
 		],
-		"queryParams": [
+		"query": [
 			{
 				"name": "create_missing_categories",
 				"required": false,
-				"description": ""
+				"kind": "boolean"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3080,8 +5222,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/rules/packs",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3093,8 +5235,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/rules",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3108,8 +5250,52 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"rule_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "conditions_op",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "conditions",
+					"required": false,
+					"kind": "csv"
+				},
+				{
+					"name": "actions",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "priority",
+					"required": false,
+					"kind": "number"
+				},
+				{
+					"name": "is_active",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "apply_to_existing",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "overwrite_existing_categories",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3121,19 +5307,21 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/search",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "q",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "limit",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 20
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3145,8 +5333,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/settings/attachments",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3158,8 +5346,37 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/setup/create-admin",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "email",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "password",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "currency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "language",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3171,8 +5388,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/setup/status",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3184,8 +5401,22 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "PATCH",
 		"path": "/api/transactions/bulk-add-tags",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "transaction_ids",
+					"required": true,
+					"kind": "csv"
+				},
+				{
+					"name": "tags",
+					"required": true,
+					"kind": "csv"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3197,8 +5428,36 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "PATCH",
 		"path": "/api/transactions/bulk-add-to-group",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "transaction_ids",
+					"required": true,
+					"kind": "csv"
+				},
+				{
+					"name": "group_id",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "share_type",
+					"required": false,
+					"kind": "options",
+					"options": [
+						"equal",
+						"percent"
+					]
+				},
+				{
+					"name": "member_splits",
+					"required": false,
+					"kind": "json"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3210,8 +5469,22 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "PATCH",
 		"path": "/api/transactions/bulk-categorize",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "transaction_ids",
+					"required": true,
+					"kind": "csv"
+				},
+				{
+					"name": "category_id",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3223,8 +5496,17 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/transactions/bulk-delete",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "transaction_ids",
+					"required": true,
+					"kind": "csv"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3236,8 +5518,22 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "PATCH",
 		"path": "/api/transactions/bulk-remove-tags",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "transaction_ids",
+					"required": true,
+					"kind": "csv"
+				},
+				{
+					"name": "tags",
+					"required": true,
+					"kind": "csv"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3251,8 +5547,17 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"transaction_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "to_account_id",
+					"required": true,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3264,8 +5569,45 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/transactions/installments",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "base",
+					"required": true,
+					"kind": "json"
+				},
+				{
+					"name": "installments",
+					"required": true,
+					"description": "Number of parcels (>= 2)",
+					"kind": "number",
+					"minimum": 2,
+					"maximum": 360
+				},
+				{
+					"name": "first_installment_status",
+					"required": false,
+					"kind": "options",
+					"options": [
+						"posted",
+						"pending"
+					]
+				},
+				{
+					"name": "frequency",
+					"required": false,
+					"kind": "options",
+					"options": [
+						"monthly",
+						"quarterly",
+						"weekly",
+						"yearly"
+					]
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3277,8 +5619,124 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/transactions",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "description",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "amount",
+					"required": true,
+					"kind": "json"
+				},
+				{
+					"name": "date",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "type",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "external_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "currency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "fx_rate",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "payee_raw",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "account_id",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "category_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "payee_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "notes",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "amount_primary",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "fx_rate_used",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "effective_bill_date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "splits",
+					"required": false,
+					"description": "Whole splits payload attached to a transaction.",
+					"kind": "json"
+				},
+				{
+					"name": "status",
+					"required": false,
+					"kind": "options",
+					"options": [
+						"posted",
+						"pending"
+					]
+				},
+				{
+					"name": "installment_number",
+					"required": false,
+					"kind": "number",
+					"minimum": 1
+				},
+				{
+					"name": "total_installments",
+					"required": false,
+					"kind": "number",
+					"minimum": 1
+				},
+				{
+					"name": "installment_total_amount",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "installment_purchase_date",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3290,8 +5748,47 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/transactions/transfer",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "from_account_id",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "to_account_id",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "amount",
+					"required": true,
+					"kind": "json"
+				},
+				{
+					"name": "destination_amount",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "date",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "description",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "notes",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3305,14 +5802,15 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"transaction_id"
 		],
-		"queryParams": [
+		"query": [
 			{
 				"name": "apply_to",
 				"required": false,
-				"description": "Installment-series scope: this row only (default), this + later installments, or the whole series. I"
+				"description": "Installment-series scope: this row only (default), this + later installments, or the whole series. Ignored for non-installment transactions.",
+				"kind": "string"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3324,79 +5822,81 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/transactions/export",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "account_id",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "account_ids",
 				"required": false,
-				"description": ""
+				"kind": "csv"
 			},
 			{
 				"name": "category_id",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "category_ids",
 				"required": false,
-				"description": ""
+				"kind": "csv"
 			},
 			{
 				"name": "payee_id",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "from",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "to",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "q",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "uncategorized",
 				"required": false,
-				"description": ""
+				"kind": "boolean"
 			},
 			{
 				"name": "type",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "status",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "exclude_ignored",
 				"required": false,
-				"description": "Drop rows the user marked ignored, or whose category is ignored"
+				"description": "Drop rows the user marked ignored, or whose category is ignored",
+				"kind": "boolean"
 			},
 			{
 				"name": "tags",
 				"required": false,
-				"description": ""
+				"kind": "csv"
 			},
 			{
 				"name": "transaction_ids",
 				"required": false,
-				"description": "If set, exports exactly these rows (scoped to the workspace); other filters are ignored."
+				"description": "If set, exports exactly these rows (scoped to the workspace); other filters are ignored.",
+				"kind": "csv"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3410,8 +5910,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"transaction_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3425,19 +5925,23 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"transaction_id"
 		],
-		"queryParams": [
+		"query": [
 			{
 				"name": "limit",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 50
 			},
 			{
 				"name": "window_days",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 365
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3451,8 +5955,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"transaction_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3464,8 +5968,17 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/transactions/link-transfer",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "transaction_ids",
+					"required": true,
+					"kind": "csv"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3477,134 +5990,148 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/transactions",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "account_id",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "account_ids",
 				"required": false,
-				"description": ""
+				"kind": "csv"
 			},
 			{
 				"name": "category_id",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "category_ids",
 				"required": false,
-				"description": ""
+				"kind": "csv"
 			},
 			{
 				"name": "payee_id",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "from",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "to",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "bill_id",
 				"required": false,
-				"description": "Filter by credit-card bill (issue #92); takes precedence over from/to"
+				"description": "Filter by credit-card bill (issue #92); takes precedence over from/to",
+				"kind": "string"
 			},
 			{
 				"name": "group_id",
 				"required": false,
-				"description": "Filter to transactions split through this group; widens visibility for linked members"
+				"description": "Filter to transactions split through this group; widens visibility for linked members",
+				"kind": "string"
 			},
 			{
 				"name": "unbilled_only",
 				"required": false,
-				"description": "Cycle-math fallback only: exclude txs already linked to any bill (used for in-progress CC cycles)"
+				"description": "Cycle-math fallback only: exclude txs already linked to any bill (used for in-progress CC cycles)",
+				"kind": "boolean"
 			},
 			{
 				"name": "q",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "uncategorized",
 				"required": false,
-				"description": ""
+				"kind": "boolean"
 			},
 			{
 				"name": "type",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "status",
 				"required": false,
-				"description": "Filter by transaction status (posted|pending)"
+				"description": "Filter by transaction status (posted|pending)",
+				"kind": "string"
 			},
 			{
 				"name": "page",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1
 			},
 			{
 				"name": "limit",
 				"required": false,
-				"description": ""
+				"kind": "number",
+				"minimum": 1,
+				"maximum": 500
 			},
 			{
 				"name": "include_opening_balance",
 				"required": false,
-				"description": ""
+				"kind": "boolean"
 			},
 			{
 				"name": "exclude_transfers",
 				"required": false,
-				"description": ""
+				"kind": "boolean"
 			},
 			{
 				"name": "user_pnl_only",
 				"required": false,
-				"description": "Return only rows that count toward dashboard/user income/expense totals"
+				"description": "Return only rows that count toward dashboard/user income/expense totals",
+				"kind": "boolean"
 			},
 			{
 				"name": "exclude_ignored",
 				"required": false,
-				"description": "Drop rows the user marked ignored, or whose category is ignored"
+				"description": "Drop rows the user marked ignored, or whose category is ignored",
+				"kind": "boolean"
 			},
 			{
 				"name": "tags",
 				"required": false,
-				"description": ""
+				"kind": "csv"
 			},
 			{
 				"name": "min_amount",
 				"required": false,
-				"description": "Filter to transactions with absolute amount >= this value (primary currency)."
+				"description": "Filter to transactions with absolute amount >= this value (primary currency).",
+				"kind": "number",
+				"minimum": 0
 			},
 			{
 				"name": "max_amount",
 				"required": false,
-				"description": "Filter to transactions with absolute amount <= this value (primary currency)."
+				"description": "Filter to transactions with absolute amount <= this value (primary currency).",
+				"kind": "number",
+				"minimum": 0
 			},
 			{
 				"name": "sort_by",
 				"required": false,
-				"description": "Column to sort by (date|amount|description|payee|category|account|type|status). Default: date desc."
+				"description": "Column to sort by (date|amount|description|payee|category|account|type|status). Default: date desc.",
+				"kind": "string"
 			},
 			{
 				"name": "sort_dir",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3618,8 +6145,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"transaction_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3631,24 +6158,24 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/transactions/calendar",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "month",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "account_id",
 				"required": false,
-				"description": ""
+				"kind": "string"
 			},
 			{
 				"name": "account_ids",
 				"required": false,
-				"description": ""
+				"kind": "csv"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3662,8 +6189,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"transaction_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3677,8 +6204,107 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"transaction_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "description",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "amount",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "type",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "currency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "account_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "category_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "payee_id",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "notes",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "amount_primary",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "fx_rate_used",
+					"required": false,
+					"kind": "json"
+				},
+				{
+					"name": "is_ignored",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "status",
+					"required": false,
+					"kind": "options",
+					"options": [
+						"posted",
+						"pending"
+					]
+				},
+				{
+					"name": "apply_to_transfer_pair",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "effective_bill_date",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "splits",
+					"required": false,
+					"description": "Whole splits payload attached to a transaction.",
+					"kind": "json"
+				},
+				{
+					"name": "apply_to",
+					"required": false,
+					"kind": "options",
+					"options": [
+						"this",
+						"future",
+						"all"
+					]
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3690,8 +6316,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/users/directory",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3703,14 +6329,15 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/users/lookup",
 		"pathParams": [],
-		"queryParams": [
+		"query": [
 			{
 				"name": "email",
 				"required": true,
-				"description": "Exact email to look up"
+				"description": "Exact email to look up",
+				"kind": "string"
 			}
 		],
-		"hasBody": false,
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3722,8 +6349,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/users/me",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3737,8 +6364,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3750,8 +6377,42 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "PATCH",
 		"path": "/api/users/me",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "password",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "email",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "is_active",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "is_superuser",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "is_verified",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "preferences",
+					"required": false,
+					"kind": "json"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3765,8 +6426,42 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "password",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "email",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "is_active",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "is_superuser",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "is_verified",
+					"required": false,
+					"kind": "boolean"
+				},
+				{
+					"name": "preferences",
+					"required": false,
+					"kind": "json"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3780,8 +6475,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3795,8 +6490,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"workspace_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3811,8 +6506,17 @@ export const OPERATIONS: SecuroOperation[] = [
 			"workspace_id",
 			"member_user_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "role",
+					"required": true,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3824,8 +6528,56 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "POST",
 		"path": "/api/workspaces",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "kind",
+					"required": false,
+					"kind": "options",
+					"options": [
+						"personal",
+						"business"
+					]
+				},
+				{
+					"name": "default_currency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "locale",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "tax_jurisdiction",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "icon",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "color",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "self_membership",
+					"required": false,
+					"kind": "boolean"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3837,8 +6589,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/workspaces/current",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3852,8 +6604,27 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"workspace_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "email",
+					"required": true,
+					"kind": "string"
+				},
+				{
+					"name": "role",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "password",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3865,8 +6636,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"method": "GET",
 		"path": "/api/workspaces",
 		"pathParams": [],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3880,8 +6651,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"workspace_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3896,8 +6667,8 @@ export const OPERATIONS: SecuroOperation[] = [
 			"workspace_id",
 			"member_user_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	},
 	{
@@ -3911,8 +6682,42 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"workspace_id"
 		],
-		"queryParams": [],
-		"hasBody": true,
+		"query": [],
+		"body": {
+			"raw": false,
+			"fields": [
+				{
+					"name": "name",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "icon",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "color",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "default_currency",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "locale",
+					"required": false,
+					"kind": "string"
+				},
+				{
+					"name": "tax_jurisdiction",
+					"required": false,
+					"kind": "string"
+				}
+			]
+		},
 		"bodyRequired": true
 	},
 	{
@@ -3926,8 +6731,8 @@ export const OPERATIONS: SecuroOperation[] = [
 		"pathParams": [
 			"workspace_id"
 		],
-		"queryParams": [],
-		"hasBody": false,
+		"query": [],
+		"body": null,
 		"bodyRequired": false
 	}
 ];

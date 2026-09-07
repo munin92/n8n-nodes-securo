@@ -37,6 +37,73 @@ const camel = (s) => {
 	return t.charAt(0).toLowerCase() + t.slice(1);
 };
 
+const comps = spec.components?.schemas ?? {};
+
+/** Loest $ref auf und reduziert FastAPIs `Optional[x]` (anyOf mit null) auf x. */
+function entpacke(sch, tiefe = 0) {
+	if (!sch || tiefe > 5) return {};
+	if (sch.$ref) return entpacke(comps[sch.$ref.split('/').pop()] ?? {}, tiefe + 1);
+	if (sch.allOf?.length === 1) return entpacke(sch.allOf[0], tiefe + 1);
+	for (const k of ['anyOf', 'oneOf']) {
+		if (sch[k]) {
+			const echte = sch[k].filter((v) => v.type !== 'null');
+			if (echte.length === 1) return { ...entpacke(echte[0], tiefe + 1), nullable: true };
+			return { komplex: true };
+		}
+	}
+	return sch;
+}
+
+/** Uebersetzt ein Schema in ein Feld der Node. */
+function feldVon(name, roh, pflicht) {
+	const sch = entpacke(roh ?? {});
+	const basis = {
+		name,
+		required: !!pflicht,
+		description: (roh?.description ?? sch.description ?? '').split('\n')[0].slice(0, 160) || undefined,
+	};
+	if (sch.komplex) return { ...basis, kind: 'json' };
+	if (Array.isArray(sch.enum) && sch.enum.length) {
+		return { ...basis, kind: 'options', options: sch.enum.map(String) };
+	}
+	if (sch.type === 'boolean') return { ...basis, kind: 'boolean' };
+	if (sch.type === 'integer' || sch.type === 'number') {
+		return {
+			...basis,
+			kind: 'number',
+			minimum: typeof sch.minimum === 'number' ? sch.minimum : undefined,
+			maximum: typeof sch.maximum === 'number' ? sch.maximum : undefined,
+		};
+	}
+	if (sch.type === 'array') {
+		const eintrag = entpacke(sch.items ?? {});
+		// Listen von Skalaren nimmt der Nutzer als Kommaliste; Listen von
+		// Objekten bleiben JSON, weil eine Zeile dafuer nicht reicht.
+		if (!eintrag.type || eintrag.type === 'string' || eintrag.type === 'number' || eintrag.type === 'integer') {
+			return { ...basis, kind: 'csv' };
+		}
+		return { ...basis, kind: 'json' };
+	}
+	if (sch.type === 'string') return { ...basis, kind: 'string' };
+	// Verschachtelte Objekte bleiben JSON. Sie flach zu klopfen hiesse, eine
+	// Struktur zu erfinden, die der Server so nicht annimmt.
+	return { ...basis, kind: 'json' };
+}
+
+/** Body-Schema in Felder zerlegen. Ohne properties bleibt es ein Rohfeld. */
+function bodyFelder(def) {
+	const rb = def.requestBody;
+	if (!rb) return null;
+	const sch = entpacke(rb.content?.['application/json']?.schema);
+	const props = sch.properties;
+	if (!props || !Object.keys(props).length) return { raw: true, fields: [] };
+	const pflicht = new Set(sch.required ?? []);
+	return {
+		raw: false,
+		fields: Object.entries(props).map(([n, ps]) => feldVon(n, ps, pflicht.has(n))),
+	};
+}
+
 const ops = [];
 for (const [pfad, methoden] of Object.entries(spec.paths ?? {})) {
 	for (const [methode, def] of Object.entries(methoden)) {
@@ -57,12 +124,10 @@ for (const [pfad, methoden] of Object.entries(spec.paths ?? {})) {
 			method: methode.toUpperCase(),
 			path: pfad,
 			pathParams: params.filter((p) => p.in === 'path').map((p) => p.name),
-			queryParams: params.filter((p) => p.in === 'query').map((p) => ({
-				name: p.name,
-				required: !!p.required,
-				description: (p.description ?? '').slice(0, 100),
-			})),
-			hasBody: !!def.requestBody,
+			query: params
+				.filter((p) => p.in === 'query')
+				.map((p) => feldVon(p.name, { ...(p.schema ?? {}), description: p.description }, p.required)),
+			body: bodyFelder(def),
 			bodyRequired: !!def.requestBody?.required,
 		});
 	}
@@ -81,6 +146,26 @@ for (const o of ops) {
 	}
 }
 
+const kollisionen = [];
+for (const o of ops) {
+	const namen = new Map();
+	for (const [herkunft, liste] of [
+		['Pfad', o.pathParams.map((n) => ({ name: n }))],
+		['Query', o.query],
+		['Body', o.body?.fields ?? []],
+	]) {
+		for (const f of liste) {
+			if (namen.has(f.name)) kollisionen.push(`${o.method} ${o.path}: ${f.name} (${namen.get(f.name)} und ${herkunft})`);
+			namen.set(f.name, herkunft);
+		}
+	}
+}
+if (kollisionen.length) {
+	console.error('Gleiche Feldnamen aus verschiedenen Quellen - n8n koennte nur einen speichern:');
+	for (const k of kollisionen) console.error('  ' + k);
+	process.exit(1);
+}
+
 ops.sort((a, b) => a.resource.localeCompare(b.resource) || a.operationName.localeCompare(b.operationName));
 
 const kopf = `/**
@@ -91,6 +176,16 @@ const kopf = `/**
  * Neu erzeugen mit: npm run generate -- --url https://<host>/api/openapi.json
  */
 
+export interface SecuroField {
+	name: string;
+	required: boolean;
+	description?: string;
+	kind: 'string' | 'number' | 'boolean' | 'options' | 'csv' | 'json';
+	options?: string[];
+	minimum?: number;
+	maximum?: number;
+}
+
 export interface SecuroOperation {
 	resource: string;
 	resourceName: string;
@@ -100,8 +195,8 @@ export interface SecuroOperation {
 	method: string;
 	path: string;
 	pathParams: string[];
-	queryParams: { name: string; required: boolean; description: string }[];
-	hasBody: boolean;
+	query: SecuroField[];
+	body: { raw: boolean; fields: SecuroField[] } | null;
 	bodyRequired: boolean;
 }
 
